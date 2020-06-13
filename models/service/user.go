@@ -1,74 +1,166 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"log"
+	"time"
 
 	"github.com/hepiska/todo-go/models/db"
 	"github.com/hepiska/todo-go/models/entity"
-
-	"github.com/goonode/mogo"
-	"labix.org/v2/mgo/bson"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type Userservice struct{}
 
-//Create is to create  new user
+// Create is to create  new user
 func (userservice Userservice) Create(user *(entity.User)) error {
-	conn := db.GetConnection()
-	defer conn.Session.Close()
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
 
-	doc := mogo.NewDoc(entity.User{}).(*(entity.User))
-	err := doc.FindOne(bson.M{"email": user.Email}, doc)
-	fmt.Println("pre item is ", doc)
-	if err == nil {
-		return errors.New("Already Exist")
+	db := db.ConfigDB()
+	// var user entity.User
+
+	count, err := db.Collection("users").CountDocuments(ctx, bson.M{"email": user.Email})
+	if err != nil {
+		return err
 	}
-	userModel := mogo.NewDoc(user).(*(entity.User))
-	err = mogo.Save(userModel)
-	if vErr, ok := err.(*mogo.ValidationError); ok {
-		return vErr
+	if count > 0 {
+		return errors.New("email being used")
 	}
-	return err
+	_, errIns := db.Collection("users").InsertOne(ctx, user)
+	if errIns != nil {
+		return errIns
+	}
+
+	return nil
 }
 
-// find one user
-func (userservice Userservice) FindOne(user *entity.User) (*(entity.User), error) {
-	conn := db.GetConnection()
-	defer conn.Session.Close()
-	doc := mogo.NewDoc(entity.User{}).(*(entity.User))
-	err := doc.FindOne(bson.M{"email": user.Email}, doc)
+// FindOneByID user
+func (userservice Userservice) FindOneByID(id string) (*(entity.User), error) {
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	oid, erroid := primitive.ObjectIDFromHex(id)
+	if erroid != nil {
+		return nil, erroid
+	}
+
+	db := db.ConfigDB()
+	var user entity.User
+	err := db.Collection("users").FindOne(ctx, bson.M{"_id": oid}).Decode(&user)
 
 	if err != nil {
 		return nil, err
 	}
-	return doc, nil
+	return &user, nil
 }
+
+// // Delete delete user by id
+// func (userservice Userservice) Delete(_id string) error {
+// 	conn := db.GetConnection()
+// 	defer conn.Session.Close()
+
+// 	doc := mogo.NewDoc(entity.User{}).(*(entity.User))
+// 	// objID := bson.ObjectIdHex(_id)
+// 	err := doc.FindOne(bson.M{"email": _id}, doc)
+// 	// fmt.Print("====masuk sini jugs", err, doc._id)
+
+// 	if err != nil {
+// 		return err
+// 	}
+// 	// errdel := mogo.Remove(doc)
+// 	// if errdel != nil {
+// 	// 	fmt.Print("====nmasuk sini")
+// 	// 	return err
+// 	// }
+
+// 	return nil
+
+// }
+
+// // Update delete user by id
+// func (userservice Userservice) Update(_id string, user *entity.User) error {
+// 	conn := db.GetConnection()
+// 	defer conn.Session.Close()
+
+// 	doc := mogo.NewDoc(entity.User{}).(*(entity.User))
+// 	err := doc.FindOne(bson.M{"_id": _id}, doc)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	doc.Address = user.Address
+
+// 	doc.Name = user.Name
+
+// 	errsave := doc.Save()
+
+// 	if errsave != nil {
+// 		return err
+// 	}
+
+// 	return nil
+
+// }
 
 // Find to find many
-func (userservice Userservice) Find(search string, skip int, limit int) ([]entity.User, error) {
-	conn := db.GetConnection()
+func (userservice Userservice) Find(search string, skip int64, limit int64) ([]entity.User, int64, error) {
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	db := db.ConfigDB()
 
-	defer conn.Session.Close()
-
-	doc := mogo.NewDoc(entity.User{}).(*(entity.User))
 	users := []entity.User{}
-	user := &entity.User{}
-	condition := bson.M{"$or": []bson.M{bson.M{"email": bson.M{"$regex": search}}, bson.M{"name": bson.M{"$regex": search}}}}
-	iter := doc.Find(condition).Limit(limit).Skip(skip * limit).Iter()
+	var user entity.User
 
-	for iter.Next(user) {
-		users = append(users, *user)
+	condition := bson.M{"$or": []bson.M{
+		bson.M{"email": bson.M{"$regex": search}},
+	}}
+	findOptions := options.Find()
+	findOptions.SetSkip(skip * limit)
+	findOptions.SetLimit(limit)
+	findOptions.SetProjection(bson.M{"password": 0})
+
+	curr, err := db.Collection("users").Find(ctx, condition, findOptions)
+	count, errcount := db.Collection("users").CountDocuments(ctx, condition)
+
+	fmt.Println("count", count)
+
+	if errcount != nil {
+		return nil, 0, errcount
+	}
+	if err != nil {
+		return nil, 0, err
 	}
 
-	return users, nil
+	for curr.Next(ctx) {
+		errdecode := curr.Decode(&user)
+		if errdecode != nil {
+			log.Fatal("Error on Decoding the document", err)
+		}
+
+		users = append(users, user)
+	}
+
+	return users, count, nil
 
 }
 
-// find by email
+// FindbyEmail find by email
 func (userservice Userservice) FindbyEmail(email string) (*entity.User, error) {
-	user := new(entity.User)
-	user.Email = email
-	return userservice.FindOne(user)
+
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+
+	db := db.ConfigDB()
+
+	var user entity.User
+
+	err := db.Collection("users").FindOne(ctx, bson.M{"email": email}).Decode(&user)
+
+	if err != nil {
+		return nil, err
+	}
+	fmt.Print(user)
+
+	return &user, nil
 
 }

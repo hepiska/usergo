@@ -3,20 +3,23 @@ package entity
 import (
 	"fmt"
 	"log"
+	"time"
 
 	"github.com/hepiska/todo-go/utils"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/goonode/mogo"
 )
 
 //User struct is to handle user data
 type User struct {
-	mogo.DocumentModel `bson:",inline" coll:"users"`
-	Email              string `idx:"{email},unique" json:"email" binding:"required"`
-	Password           string `json:"password" binding:"required"`
-	Name               string `json:"name"`
-	Address            string `json:"address"`
+	ID        primitive.ObjectID `bson:"_id,omitempty"  json:"id"`
+	Email     string             `idx:"{email},unique" json:"email" bson:"email"  binding:"required"`
+	Password  string             `json:"password" binding:"required" bson:"password" `
+	Name      string             `json:"name" bson:"name"`
+	Address   string             `json:"address" bson:"address"`
+	CreatedAt time.Time          `json:"created_at, omitempty" bson:"_created"`
+	UpdatedAt time.Time          `json:"updated_at, omitempty" bson:"_modified"`
 }
 
 //GetJwtToken returns jwt token with user email claims
@@ -28,12 +31,10 @@ func (user *User) GetJwtToken() (string, error) {
 	log.Println(token)
 
 	secretKey := utils.EnvVar("TOKEN_KEY")
-	log.Println(secretKey)
 	tokenString, err := token.SignedString([]byte(secretKey))
-	log.Println(tokenString, err)
 	return tokenString, err
 }
 
-func init() {
-	mogo.ModelRegistry.Register(User{})
-}
+// func init() {
+// 	mogo.ModelRegistry.Register(User{})
+// }

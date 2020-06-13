@@ -27,6 +27,10 @@ func userRoute(router *gin.Engine) {
 	authGroup := router.Group("/users")
 	authGroup.Use(middlewares.Authentication())
 	authGroup.GET("/", userController.GetAll)
+	authGroup.GET("/:id", userController.GetOne)
+
+	// authGroup.DELETE("/:id", userController.Delete)
+
 }
 
 // InitRoute ins function to initial http route

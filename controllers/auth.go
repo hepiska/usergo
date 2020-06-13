@@ -57,11 +57,12 @@ func (auth *AuthController) Signup(c *gin.Context) {
 	return
 }
 
+// Login sudah jelas
 func (auth *AuthController) Login(c *gin.Context) {
 
 	var info entity.User
 	if err := c.ShouldBindJSON(&info); err != nil {
-		c.JSON(401, gin.H{"error": "Please input valid data"})
+		c.JSON(401, gin.H{"error": err.Error()})
 		return
 	}
 
