@@ -45,6 +45,26 @@ func (userservice Userservice) FindOne(user *entity.User) (*(entity.User), error
 	return doc, nil
 }
 
+// Find to find many
+func (userservice Userservice) Find(search string, skip int, limit int) ([]entity.User, error) {
+	conn := db.GetConnection()
+
+	defer conn.Session.Close()
+
+	doc := mogo.NewDoc(entity.User{}).(*(entity.User))
+	users := []entity.User{}
+	user := &entity.User{}
+	condition := bson.M{"$or": []bson.M{bson.M{"email": bson.M{"$regex": search}}, bson.M{"name": bson.M{"$regex": search}}}}
+	iter := doc.Find(condition).Limit(limit).Skip(skip * limit).Iter()
+
+	for iter.Next(user) {
+		users = append(users, *user)
+	}
+
+	return users, nil
+
+}
+
 // find by email
 func (userservice Userservice) FindbyEmail(email string) (*entity.User, error) {
 	user := new(entity.User)

@@ -85,3 +85,10 @@ func (auth *AuthController) Login(c *gin.Context) {
 
 	c.JSON(200, gin.H{"token": token})
 }
+
+// GetMe get user data base on token
+func (auth *AuthController) GetMe(c *gin.Context) {
+	user := c.MustGet("user").(*(entity.User))
+
+	c.JSON(200, gin.H{"name": user.Name, "email": user.Email, "address": user.Address})
+}

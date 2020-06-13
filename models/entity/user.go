@@ -3,7 +3,6 @@ package entity
 import (
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/hepiska/todo-go/utils"
 
@@ -18,8 +17,6 @@ type User struct {
 	Password           string `json:"password" binding:"required"`
 	Name               string `json:"name"`
 	Address            string `json:"address"`
-	CreatedAt          *time.Time
-	UpdatedAt          *time.Time
 }
 
 //GetJwtToken returns jwt token with user email claims
