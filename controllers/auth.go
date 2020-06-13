@@ -16,14 +16,14 @@ type AuthController struct{}
 func (auth *AuthController) Signup(c *gin.Context) {
 
 	type signupInfo struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
+		Email    string `json:"email" binding:"required"`
+		Password string `json:"password" binding:"required"`
 		Name     string `json:"name"`
 		Address  string `json:"address"`
 	}
 	var info signupInfo
 	if err := c.ShouldBindJSON(&info); err != nil {
-		c.JSON(401, gin.H{"error": "Please input all fields"})
+		c.JSON(401, gin.H{"error": "Please input valid data asas"})
 		return
 	}
 	user := entity.User{}
@@ -55,4 +55,33 @@ func (auth *AuthController) Signup(c *gin.Context) {
 	c.JSON(200, gin.H{"token": token})
 
 	return
+}
+
+func (auth *AuthController) Login(c *gin.Context) {
+
+	var info entity.User
+	if err := c.ShouldBindJSON(&info); err != nil {
+		c.JSON(401, gin.H{"error": "Please input valid data"})
+		return
+	}
+
+	userservice := service.Userservice{}
+	user, err := userservice.FindbyEmail(info.Email)
+	if err != nil {
+		c.JSON(401, gin.H{"error": "user not found"})
+		return
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(info.Password)); err != nil {
+		c.JSON(401, gin.H{"error": "email and password invalid"})
+		return
+	}
+
+	token, errToken := user.GetJwtToken()
+	if errToken != nil {
+		c.JSON(500, err.Error())
+		return
+	}
+
+	c.JSON(200, gin.H{"token": token})
 }

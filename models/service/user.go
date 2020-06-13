@@ -31,3 +31,24 @@ func (userservice Userservice) Create(user *(entity.User)) error {
 	}
 	return err
 }
+
+// find one user
+func (userservice Userservice) FindOne(user *entity.User) (*(entity.User), error) {
+	conn := db.GetConnection()
+	defer conn.Session.Close()
+	doc := mogo.NewDoc(entity.User{}).(*(entity.User))
+	err := doc.FindOne(bson.M{"email": user.Email}, doc)
+
+	if err != nil {
+		return nil, err
+	}
+	return doc, nil
+}
+
+// find by email
+func (userservice Userservice) FindbyEmail(email string) (*entity.User, error) {
+	user := new(entity.User)
+	user.Email = email
+	return userservice.FindOne(user)
+
+}

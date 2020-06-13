@@ -14,6 +14,7 @@ func globalroute(router *gin.Engine) {
 func authRoute(router *gin.Engine) {
 	AuthController := new(controllers.AuthController)
 	router.POST("/signup", AuthController.Signup)
+	router.POST("/login", AuthController.Login)
 }
 
 func InitRoute() *gin.Engine {
