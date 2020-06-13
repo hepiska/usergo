@@ -22,6 +22,12 @@ type User struct {
 	UpdatedAt time.Time          `json:"updated_at, omitempty" bson:"_modified"`
 }
 
+//User struct is to edit user data
+type UserEdit struct {
+	Name    string `json:"name" bson:"name"`
+	Address string `json:"address" bson:"address"`
+}
+
 //GetJwtToken returns jwt token with user email claims
 func (user *User) GetJwtToken() (string, error) {
 	fmt.Println("jwt token email is : ", user.Email)

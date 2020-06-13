@@ -28,6 +28,7 @@ func userRoute(router *gin.Engine) {
 	authGroup.Use(middlewares.Authentication())
 	authGroup.GET("/", userController.GetAll)
 	authGroup.GET("/:id", userController.GetOne)
+	authGroup.PUT("/:id", userController.Update)
 
 	authGroup.DELETE("/:id", userController.Delete)
 

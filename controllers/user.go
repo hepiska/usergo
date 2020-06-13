@@ -3,6 +3,8 @@ package controllers
 import (
 	"github.com/gin-gonic/gin"
 	// "github.com/hepiska/todo-go/models/entity"
+
+	"github.com/hepiska/todo-go/models/entity"
 	"github.com/hepiska/todo-go/models/service"
 )
 
@@ -36,7 +38,7 @@ func (userC *UserController) GetAll(c *gin.Context) {
 
 }
 
-// GetAll user
+// GetOne user
 func (userC *UserController) GetOne(c *gin.Context) {
 	_id := c.Param("id")
 
@@ -67,5 +69,23 @@ func (userC *UserController) Delete(c *gin.Context) {
 
 }
 
-// // Update delete user
-// func (userC *UserController) Update(c *gin.Context) {}
+// Update  user
+func (userC *UserController) Update(c *gin.Context) {
+	_id := c.Param("id")
+
+	input := entity.UserEdit{}
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(401, gin.H{"error": "Please input valid data asas"})
+		return
+	}
+	userService := service.Userservice{}
+	errEdit := userService.Update(_id, &input)
+	if errEdit != nil {
+		c.JSON(500, gin.H{"error": errEdit.Error()})
+		return
+	}
+
+	c.JSON(200, gin.H{"status": "ok"})
+	return
+
+}

@@ -73,30 +73,30 @@ func (userservice Userservice) Delete(id string) error {
 
 }
 
-// // Update delete user by id
-// func (userservice Userservice) Update(_id string, user *entity.User) error {
-// 	conn := db.GetConnection()
-// 	defer conn.Session.Close()
+// Update update user by id
+func (userservice Userservice) Update(id string, user *entity.UserEdit) error {
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	oid, erroid := primitive.ObjectIDFromHex(id)
+	if erroid != nil {
+		return erroid
+	}
 
-// 	doc := mogo.NewDoc(entity.User{}).(*(entity.User))
-// 	err := doc.FindOne(bson.M{"_id": _id}, doc)
-// 	if err != nil {
-// 		return err
-// 	}
+	// updateData := bson.D{"$set": {bson.D{{"address", user.Address}, {"name": user.Name}}}}
 
-// 	doc.Address = user.Address
+	updateData := bson.D{
+		{"$set", bson.D{{"name", user.Name}}},
+		{"$set", bson.D{{"address", user.Address}}},
+	}
+	optionsupdate := options.Update()
 
-// 	doc.Name = user.Name
+	db := db.ConfigDB()
+	err := db.Collection("users").FindOneAndUpdate(ctx, bson.M{"_id": oid}, updateData, optionsupdate).Err()
+	if err != nil {
+		return err
+	}
+	return nil
 
-// 	errsave := doc.Save()
-
-// 	if errsave != nil {
-// 		return err
-// 	}
-
-// 	return nil
-
-// }
+}
 
 // Find to find many
 func (userservice Userservice) Find(search string, skip int64, limit int64) ([]entity.User, int64, error) {
