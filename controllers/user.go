@@ -53,19 +53,19 @@ func (userC *UserController) GetOne(c *gin.Context) {
 
 }
 
-// // Delete delete user
-// func (userC *UserController) Delete(c *gin.Context) {
-// 	_id := c.Param("id")
-// 	userService := service.Userservice{}
-// 	err := userService.Delete(_id)
-// 	if err != nil {
-// 		c.JSON(500, gin.H{"error": "delete failed"})
-// 		return
-// 	}
-// 	c.JSON(500, gin.H{"status": "ok"})
-// 	return
+// Delete delete user
+func (userC *UserController) Delete(c *gin.Context) {
+	_id := c.Param("id")
+	userService := service.Userservice{}
+	err := userService.Delete(_id)
+	if err != nil {
+		c.JSON(500, gin.H{"error": "delete failed"})
+		return
+	}
+	c.JSON(500, gin.H{"status": "ok"})
+	return
 
-// }
+}
 
 // // Update delete user
 // func (userC *UserController) Update(c *gin.Context) {}

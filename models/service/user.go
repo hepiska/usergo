@@ -56,28 +56,22 @@ func (userservice Userservice) FindOneByID(id string) (*(entity.User), error) {
 	return &user, nil
 }
 
-// // Delete delete user by id
-// func (userservice Userservice) Delete(_id string) error {
-// 	conn := db.GetConnection()
-// 	defer conn.Session.Close()
+// Delete delete user by id
+func (userservice Userservice) Delete(id string) error {
+	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
+	oid, erroid := primitive.ObjectIDFromHex(id)
+	if erroid != nil {
+		return erroid
+	}
 
-// 	doc := mogo.NewDoc(entity.User{}).(*(entity.User))
-// 	// objID := bson.ObjectIdHex(_id)
-// 	err := doc.FindOne(bson.M{"email": _id}, doc)
-// 	// fmt.Print("====masuk sini jugs", err, doc._id)
+	db := db.ConfigDB()
+	err := db.Collection("users").FindOneAndDelete(ctx, bson.M{"_id": oid}).Err()
+	if err != nil {
+		return err
+	}
+	return nil
 
-// 	if err != nil {
-// 		return err
-// 	}
-// 	// errdel := mogo.Remove(doc)
-// 	// if errdel != nil {
-// 	// 	fmt.Print("====nmasuk sini")
-// 	// 	return err
-// 	// }
-
-// 	return nil
-
-// }
+}
 
 // // Update delete user by id
 // func (userservice Userservice) Update(_id string, user *entity.User) error {

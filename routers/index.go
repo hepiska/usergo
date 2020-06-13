@@ -29,7 +29,7 @@ func userRoute(router *gin.Engine) {
 	authGroup.GET("/", userController.GetAll)
 	authGroup.GET("/:id", userController.GetOne)
 
-	// authGroup.DELETE("/:id", userController.Delete)
+	authGroup.DELETE("/:id", userController.Delete)
 
 }
 
