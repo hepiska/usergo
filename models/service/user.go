@@ -87,10 +87,9 @@ func (userservice Userservice) Update(id string, user *entity.UserEdit) error {
 		{"$set", bson.D{{"name", user.Name}}},
 		{"$set", bson.D{{"address", user.Address}}},
 	}
-	optionsupdate := options.Update()
 
 	db := db.ConfigDB()
-	err := db.Collection("users").FindOneAndUpdate(ctx, bson.M{"_id": oid}, updateData, optionsupdate).Err()
+	err := db.Collection("users").FindOneAndUpdate(ctx, bson.M{"_id": oid}, updateData).Err()
 	if err != nil {
 		return err
 	}

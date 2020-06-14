@@ -2,12 +2,16 @@
 package main
 
 import (
-	"fmt"
 	"github.com/hepiska/todo-go/routers"
+	"github.com/hepiska/todo-go/utils"
+
+
+
 )
 
 func main() {
-	fmt.Print("hello go")
+	port := utils.EnvVar("PORT")
+
 	router:=routers.InitRoute()
-	router.Run()
+	router.Run(port)
 }

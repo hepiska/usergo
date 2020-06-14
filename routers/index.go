@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/hepiska/todo-go/controllers"
 	"github.com/hepiska/todo-go/middlewares"
+	"github.com/hepiska/todo-go/utils"
 )
 
 func globalroute(router *gin.Engine) {
@@ -36,9 +37,16 @@ func userRoute(router *gin.Engine) {
 
 // InitRoute ins function to initial http route
 func InitRoute() *gin.Engine {
+	mode := utils.EnvVar("GIN_MODE")
+	if mode == "release" {
+		gin.SetMode(gin.ReleaseMode)
+
+	}
+
 	router := gin.New()
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
+
 	authRoute(router)
 	userRoute(router)
 	globalroute(router)
