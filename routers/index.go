@@ -1,10 +1,14 @@
 package routers
 
 import (
+	"time"
+
 	"github.com/gin-gonic/gin"
 	"github.com/hepiska/todo-go/controllers"
 	"github.com/hepiska/todo-go/middlewares"
 	"github.com/hepiska/todo-go/utils"
+
+	cors "github.com/itsjamie/gin-cors"
 )
 
 func globalroute(router *gin.Engine) {
@@ -44,6 +48,16 @@ func InitRoute() *gin.Engine {
 	}
 
 	router := gin.New()
+	router.Use(cors.Middleware(cors.Config{
+		Origins:         "*",
+		Methods:         "GET, PUT, POST, DELETE",
+		RequestHeaders:  "Origin, Authorization, Content-Type",
+		ExposedHeaders:  "",
+		MaxAge:          50 * time.Second,
+		Credentials:     true,
+		ValidateHeaders: false,
+	}))
+
 	router.Use(gin.Logger())
 	router.Use(gin.Recovery())
 
