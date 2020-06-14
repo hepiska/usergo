@@ -4,6 +4,8 @@ just user crud plus auth write in go
 
 
  
+
+digital ocean uri https://user.api.boengkoes.id/
 #enpoint
 |  url |method   |query   |body   |   |
 |---|---|---|---|---|
