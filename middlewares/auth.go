@@ -15,6 +15,9 @@ import (
 func Authentication() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authheader := c.Request.Header.Get("Authorization")
+		if len(authheader) == 0 {
+			authheader = c.Query("token")
+		}
 
 		if len(authheader) == 0 {
 			c.JSON(400, gin.H{"error": "no token provided"})
