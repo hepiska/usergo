@@ -10,7 +10,8 @@ just user crud plus auth write in go
 |/login  |POST   | -   | email, password  |   |
 | /signup  |   POST| -  | email, password , address, name |   |
 |  /me |  GET | -  |-   | |
-|  /user | GET   | search,skip,limit   |-   |   |
-|  /user/:id | GET   | -   |-   |   |
-|  /user/:id | DELETE   | -   |-   |   |
-|  /user/:id | PUT   | -   |address, name  |   |
+|  /users | GET   | search,skip,limit   |-   |   |
+|  /users/:id | GET   | -   |-   |   |
+|  /users/:id | DELETE   | -   |-   |   |
+|  /users/:id | PUT   | -   |address, name  |   |
+
